@@ -1,0 +1,682 @@
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE主題圖片尺寸調整工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f7e9 0%, #dbeafe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+        
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .upload-box {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 3px dashed #10b981;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .upload-box:hover {
+            background: linear-gradient(135deg, #a7f3d0 0%, #6ee7b7 100%);
+        }
+        
+        .upload-box input {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .preview-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #10b981;
+        }
+        
+        .category-section {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #3b82f6;
+            border-radius: 15px;
+            padding: 30px;
+        }
+        
+        .category-section h3 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .category-btn {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #374151;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .category-btn:hover {
+            background: #dbeafe;
+        }
+        
+        .category-btn.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #2563eb;
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            flex: 0 0 auto;
+            padding: 18px 30px;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .results {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 30px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .results h3 {
+            color: #1f2937;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .image-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+        
+        .image-card h4 {
+            font-size: 0.9rem;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+        
+        .image-card p {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        
+        .image-card button {
+            width: 100%;
+            padding: 10px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .image-card button:hover {
+            background: #2563eb;
+        }
+        
+        .info-box {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .info-box h4 {
+            color: #92400e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .info-box ol, .info-box ul {
+            color: #78350f;
+            padding-left: 25px;
+        }
+        
+        .info-box li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .warning-box {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .warning-box h4 {
+            color: #991b1b;
+            margin-bottom: 10px;
+        }
+        
+        .warning-box p {
+            color: #7f1d1d;
+        }
+        
+        @media (max-width: 768px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 LINE主題圖片調整工具</h1>
+        <p class="subtitle">上傳圖片並自動調整為LINE主題所需尺寸</p>
+        
+        <div class="upload-section">
+            <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept="image/*" multiple>
+                <div id="uploadContent">
+                    <div class="upload-icon">📤</div>
+                    <h3>點擊上傳圖片</h3>
+                    <p>支援 PNG, JPG, JPEG 格式</p>
+                    <p style="margin-top: 10px; color: #059669; font-weight: bold;">可一次選擇多張圖片</p>
+                </div>
+            </div>
+            
+            <div class="category-section">
+                <h3>選擇圖片類別</h3>
+                <button class="category-btn active" data-category="main">A 主要圖片 (3張)</button>
+                <button class="category-btn" data-category="tab">B 選單按鈕圖片 (14張)</button>
+                <button class="category-btn" data-category="tabBackground">B 選單背景圖片 (1張)</button>
+                <button class="category-btn" data-category="password">D 密碼主面圖片 (8張→16張)</button>
+                <button class="category-btn" data-category="chat">C 聊天背景圖片 (2張)</button>
+                <button class="category-btn" data-category="individual">E 個人圖片 (2張→4張)</button>
+            </div>
+        </div>
+        
+        <div class="warning-box" id="warningBox" style="display:none;">
+            <h4>⚠️ 注意</h4>
+            <p id="warningText"></p>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="processBtn" disabled>🖼️ 開始調整尺寸</button>
+            <button class="btn btn-secondary" id="downloadAllBtn" style="display:none">💾 下載全部圖片</button>
+            <button class="btn btn-danger" id="clearBtn" style="display:none">🗑️ 清除</button>
+        </div>
+        
+        <div class="results" id="results">
+            <h3>✅ 處理完成的圖片</h3>
+            <div class="image-grid" id="imageGrid"></div>
+        </div>
+        
+        <div class="info-box">
+            <h4>📝 使用說明</h4>
+            <ol>
+                <li><strong>單張模式：</strong>上傳1張圖片，系統會自動生成該類別所需的所有尺寸（圖片內容相同）</li>
+                <li><strong>多張模式（選單按鈕專用）：</strong>一次上傳14張不同的圖片，系統會按順序對應到14個按鈕位置</li>
+                <li>選擇要製作的圖片類別</li>
+                <li>點擊「開始調整尺寸」按鈕</li>
+                <li>預覽調整後的圖片</li>
+                <li>單獨下載或批量下載所有圖片</li>
+            </ol>
+            <h4 style="margin-top: 20px;">📋 選單按鈕圖片順序（14張）</h4>
+            <ul>
+                <li>第1張：主頁 OFF → i_29.png</li>
+                <li>第2張：主頁 ON → i_30.png</li>
+                <li>第3張：聊天 OFF → i_03.png</li>
+                <li>第4張：聊天 ON → i_04.png</li>
+                <li>第5張：VOOM OFF → i_33.png</li>
+                <li>第6張：VOOM ON → i_34.png</li>
+                <li>第7張：通話 OFF → i_07.png</li>
+                <li>第8張：通話 ON → i_08.png</li>
+                <li>第9張：TODAY OFF → i_25.png</li>
+                <li>第10張：TODAY ON → i_26.png</li>
+                <li>第11張：TODAY OFF → i_31.png</li>
+                <li>第12張：TODAY ON → i_32.png</li>
+                <li>第13張：錢包 OFF → i_27.png</li>
+                <li>第14張：錢包 ON → i_28.png</li>
+            </ul>
+            
+            <h4 style="margin-top: 20px;">📋 密碼主面圖片順序（8張→16張）</h4>
+            <ul>
+                <li>第1張：密碼1 OFF → i_12.png (120x120) + a_12.png (116x116)</li>
+                <li>第2張：密碼1 ON → i_13.png (120x120) + a_13.png (116x116)</li>
+                <li>第3張：密碼2 OFF → i_14.png (120x120) + a_14.png (116x116)</li>
+                <li>第4張：密碼2 ON → i_15.png (120x120) + a_15.png (116x116)</li>
+                <li>第5張：密碼3 OFF → i_16.png (120x120) + a_16.png (116x116)</li>
+                <li>第6張：密碼3 ON → i_17.png (120x120) + a_17.png (116x116)</li>
+                <li>第7張：密碼4 OFF → i_18.png (120x120) + a_18.png (116x116)</li>
+                <li>第8張：密碼4 ON → i_19.png (120x120) + a_19.png (116x116)</li>
+            </ul>
+            
+            <h4 style="margin-top: 20px;">📋 個人圖片順序（2張→4張）</h4>
+            <ul>
+                <li>第1張：個人圖(個人) → i_20.png (240x240) + a_20.png (247x247)</li>
+                <li>第2張：個人圖(群組) → i_21.png (240x240) + a_21.png (247x247)</li>
+            </ul>
+            
+            <p style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #fbbf24; color: #78350f;">
+                <strong>💡 提示：</strong>此工具適合上傳到GitHub作為靜態網頁使用，無需後端伺服器即可運行。
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const imageSpecs = {
+            main: [
+                { name: 'iOS縮圖', width: 200, height: 284, filename: 'ios_thumbnail.png' },
+                { name: 'Android縮圖', width: 136, height: 202, filename: 'android_thumbnail.png' },
+                { name: 'LINE STORE縮圖', width: 198, height: 278, filename: 'store_thumbnail.png' }
+            ],
+            tab: [
+                { name: 'iOS主頁 OFF', width: 128, height: 150, filename: 'i_29.png' },
+                { name: 'iOS主頁 ON', width: 128, height: 150, filename: 'i_30.png' },
+                { name: 'iOS聊天 OFF', width: 128, height: 150, filename: 'i_03.png' },
+                { name: 'iOS聊天 ON', width: 128, height: 150, filename: 'i_04.png' },
+                { name: 'iOS VOOM OFF', width: 128, height: 150, filename: 'i_33.png' },
+                { name: 'iOS VOOM ON', width: 128, height: 150, filename: 'i_34.png' },
+                { name: 'iOS通話 OFF', width: 128, height: 150, filename: 'i_07.png' },
+                { name: 'iOS通話 ON', width: 128, height: 150, filename: 'i_08.png' },
+                { name: 'iOS TODAY OFF', width: 128, height: 150, filename: 'i_25.png' },
+                { name: 'iOS TODAY ON', width: 128, height: 150, filename: 'i_26.png' },
+                { name: 'iOS TODAY OFF', width: 128, height: 150, filename: 'i_31.png' },
+                { name: 'iOS TODAY ON', width: 128, height: 150, filename: 'i_32.png' },
+                { name: 'iOS錢包 OFF', width: 128, height: 150, filename: 'i_27.png' },
+                { name: 'iOS錢包 ON', width: 128, height: 150, filename: 'i_28.png' }
+            ],
+            tabBackground: [
+                { name: '選單背景圖片', width: 1472, height: 150, filename: 'i_11.png' }
+            ],
+            password: [
+                { name: 'iOS密碼 1-OFF', width: 120, height: 120, filename: 'i_12.png', sourceIndex: 0 },
+                { name: 'iOS密碼 1-ON', width: 120, height: 120, filename: 'i_13.png', sourceIndex: 1 },
+                { name: 'iOS密碼 2-OFF', width: 120, height: 120, filename: 'i_14.png', sourceIndex: 2 },
+                { name: 'iOS密碼 2-ON', width: 120, height: 120, filename: 'i_15.png', sourceIndex: 3 },
+                { name: 'iOS密碼 3-OFF', width: 120, height: 120, filename: 'i_16.png', sourceIndex: 4 },
+                { name: 'iOS密碼 3-ON', width: 120, height: 120, filename: 'i_17.png', sourceIndex: 5 },
+                { name: 'iOS密碼 4-OFF', width: 120, height: 120, filename: 'i_18.png', sourceIndex: 6 },
+                { name: 'iOS密碼 4-ON', width: 120, height: 120, filename: 'i_19.png', sourceIndex: 7 },
+                { name: 'Android密碼 1-OFF', width: 116, height: 116, filename: 'a_12.png', sourceIndex: 0 },
+                { name: 'Android密碼 1-ON', width: 116, height: 116, filename: 'a_13.png', sourceIndex: 1 },
+                { name: 'Android密碼 2-OFF', width: 116, height: 116, filename: 'a_14.png', sourceIndex: 2 },
+                { name: 'Android密碼 2-ON', width: 116, height: 116, filename: 'a_15.png', sourceIndex: 3 },
+                { name: 'Android密碼 3-OFF', width: 116, height: 116, filename: 'a_16.png', sourceIndex: 4 },
+                { name: 'Android密碼 3-ON', width: 116, height: 116, filename: 'a_17.png', sourceIndex: 5 },
+                { name: 'Android密碼 4-OFF', width: 116, height: 116, filename: 'a_18.png', sourceIndex: 6 },
+                { name: 'Android密碼 4-ON', width: 116, height: 116, filename: 'a_19.png', sourceIndex: 7 }
+            ],
+            chat: [
+                { name: 'iOS聊天背景', width: 375, height: 667, filename: 'i_chat_bg.png' },
+                { name: 'Android聊天背景', width: 360, height: 640, filename: 'a_chat_bg.png' }
+            ],
+            individual: [
+                { name: 'iOS個人圖(個人)', width: 240, height: 240, filename: 'i_20.png', sourceIndex: 0 },
+                { name: 'iOS個人圖(群組)', width: 240, height: 240, filename: 'i_21.png', sourceIndex: 1 },
+                { name: 'Android個人圖(個人)', width: 247, height: 247, filename: 'a_20.png', sourceIndex: 0 },
+                { name: 'Android個人圖(群組)', width: 247, height: 247, filename: 'a_21.png', sourceIndex: 1 }
+            ]
+        };
+
+        let uploadedImages = [];
+        let selectedCategory = 'main';
+        let processedImages = [];
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            uploadedImages = [];
+            
+            if (files.length > 0) {
+                const previewGrid = document.createElement('div');
+                previewGrid.className = 'preview-grid';
+                
+                let loadedCount = 0;
+                files.forEach((file, index) => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            uploadedImages.push(event.target.result);
+                            const img = document.createElement('img');
+                            img.src = event.target.result;
+                            img.className = 'preview-img';
+                            img.title = `圖片 ${index + 1}`;
+                            previewGrid.appendChild(img);
+                            
+                            loadedCount++;
+                            if (loadedCount === files.length) {
+                                document.getElementById('uploadContent').innerHTML = '';
+                                document.getElementById('uploadContent').appendChild(previewGrid);
+                                document.getElementById('processBtn').disabled = false;
+                                checkImageCount();
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCategory = btn.dataset.category;
+                checkImageCount();
+            });
+        });
+
+        function checkImageCount() {
+            const warningBox = document.getElementById('warningBox');
+            const warningText = document.getElementById('warningText');
+            const specs = imageSpecs[selectedCategory];
+            const uploadedCount = uploadedImages.length;
+            
+            if (uploadedCount === 0) {
+                warningBox.style.display = 'none';
+                return;
+            }
+            
+            // 密碼圖片特殊處理
+            if (selectedCategory === 'password') {
+                const requiredCount = 8;
+                if (uploadedCount === 1) {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `單張模式：將使用同一張圖片生成16個檔案（iOS和Android各8張）。`;
+                } else if (uploadedCount < requiredCount) {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `密碼圖片建議上傳8張不同圖片。目前上傳${uploadedCount}張，不足的位置會重複使用現有圖片。`;
+                } else if (uploadedCount === requiredCount) {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `完美！8張圖片將分別生成iOS (120x120) 和 Android (116x116) 兩種尺寸，共16個檔案。`;
+                } else {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `密碼圖片只需要8張，將使用前8張圖片進行處理。`;
+                }
+                return;
+            }
+            
+            // 個人圖片特殊處理
+            if (selectedCategory === 'individual') {
+                const requiredCount = 2;
+                if (uploadedCount === 1) {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `單張模式：將使用同一張圖片生成4個檔案（iOS和Android各2張）。`;
+                } else if (uploadedCount === requiredCount) {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `完美！2張圖片將分別生成iOS (240x240) 和 Android (247x247) 兩種尺寸，共4個檔案。`;
+                } else if (uploadedCount > requiredCount) {
+                    warningBox.style.display = 'block';
+                    warningText.textContent = `個人圖片只需要2張，將使用前2張圖片進行處理。`;
+                } else {
+                    warningBox.style.display = 'none';
+                }
+                return;
+            }
+            
+            // 其他類別的處理
+            const requiredCount = specs.length;
+            if (selectedCategory === 'tab' && uploadedCount > 1 && uploadedCount !== requiredCount) {
+                warningBox.style.display = 'block';
+                warningText.textContent = `選單按鈕需要14張圖片，但您上傳了${uploadedCount}張。系統將使用前${Math.min(uploadedCount, requiredCount)}張圖片，其餘位置會重複使用第1張圖片。`;
+            } else if (uploadedCount === 1) {
+                warningBox.style.display = 'block';
+                warningText.textContent = `單張模式：將使用同一張圖片生成${requiredCount}個不同尺寸的檔案。`;
+            } else if (uploadedCount > 1 && selectedCategory !== 'tab') {
+                warningBox.style.display = 'block';
+                warningText.textContent = `此類別只需要${requiredCount}張圖片，將使用前${requiredCount}張圖片進行處理。`;
+            } else {
+                warningBox.style.display = 'none';
+            }
+        }
+
+        function resizeImage(imageSrc, targetWidth, targetHeight) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                    const ctx = canvas.getContext('2d');
+                    
+                    const scale = Math.max(targetWidth / img.width, targetHeight / img.height);
+                    const scaledWidth = img.width * scale;
+                    const scaledHeight = img.height * scale;
+                    const x = (targetWidth - scaledWidth) / 2;
+                    const y = (targetHeight - scaledHeight) / 2;
+                    
+                    ctx.drawImage(img, x, y, scaledWidth, scaledHeight);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.src = imageSrc;
+            });
+        }
+
+        document.getElementById('processBtn').addEventListener('click', async () => {
+            if (uploadedImages.length === 0) return;
+            
+            const specs = imageSpecs[selectedCategory];
+            processedImages = [];
+            
+            for (let i = 0; i < specs.length; i++) {
+                const spec = specs[i];
+                let imageIndex;
+                
+                // 密碼圖片和個人圖片特殊處理：使用 sourceIndex
+                if ((selectedCategory === 'password' || selectedCategory === 'individual') && spec.sourceIndex !== undefined) {
+                    imageIndex = uploadedImages.length === 1 ? 0 : Math.min(spec.sourceIndex, uploadedImages.length - 1);
+                } else {
+                    imageIndex = uploadedImages.length === 1 ? 0 : Math.min(i, uploadedImages.length - 1);
+                }
+                
+                const sourceImage = uploadedImages[imageIndex];
+                const resizedImage = await resizeImage(sourceImage, spec.width, spec.height);
+                processedImages.push({
+                    ...spec,
+                    dataUrl: resizedImage
+                });
+            }
+            
+            displayResults();
+        });
+
+        function displayResults() {
+            const grid = document.getElementById('imageGrid');
+            grid.innerHTML = '';
+            
+            processedImages.forEach((img, index) => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.innerHTML = `
+                    <img src="${img.dataUrl}" alt="${img.name}">
+                    <h4>${img.name}</h4>
+                    <p>${img.width} × ${img.height}px</p>
+                    <button onclick="downloadImage(${index})">下載</button>
+                `;
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('results').classList.add('show');
+            document.getElementById('downloadAllBtn').style.display = 'block';
+            document.getElementById('clearBtn').style.display = 'block';
+        }
+
+        function downloadImage(index) {
+            const img = processedImages[index];
+            const link = document.createElement('a');
+            link.href = img.dataUrl;
+            link.download = img.filename;
+            link.click();
+        }
+
+        document.getElementById('downloadAllBtn').addEventListener('click', () => {
+            processedImages.forEach((img, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = img.dataUrl;
+                    link.download = img.filename;
+                    link.click();
+                }, index * 200);
+            });
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            uploadedImages = [];
+            processedImages = [];
+            selectedCategory = 'main';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadContent').innerHTML = `
+                <div class="upload-icon">📤</div>
+                <h3>點擊上傳圖片</h3>
+                <p>支援 PNG, JPG, JPEG 格式</p>
+                <p style="margin-top: 10px; color: #059669; font-weight: bold;">可一次選擇多張圖片</p>
+            `;
+            document.getElementById('processBtn').disabled = true;
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('downloadAllBtn').style.display = 'none';
+            document.getElementById('clearBtn').style.display = 'none';
+            document.getElementById('warningBox').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
